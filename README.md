@@ -1,417 +1,116 @@
 # Document Autonomy System
 
-A hybrid documentation framework combining human-readable markdown with machine-readable XML to enable programmatic decision-making and progressive AI autonomy.
-
-**Status:** Production-tested over 77 business documents, 3 months of operations  
-**Coverage:** 91% of documents enhanced with autonomy frameworks  
-**Impact:** AI can now make 87% of routine decisions autonomously  
+**An agentic document management framework that improved doc quality scores from 45→88/100 with 36/36 gate passes — built so AI agents can find, trust, and act on documentation without human help.**
 
 ---
 
-## 🎯 The Problem
+## The Problem
 
-Traditional business documentation has limitations:
+Documentation written for humans fails agents. A human reads a doc and fills in ambiguity from context — they know what "the main workflow" means, they understand implied references, they infer whether a doc is current or stale. An AI agent reads the same doc and either hallucinates the gaps, retrieves the wrong document, or stalls waiting for clarification.
 
-**Human-Only Readable:**
-- ❌ AI must parse natural language to find thresholds
-- ❌ Decision rules buried in prose
-- ❌ No programmatic validation possible
-- ❌ Ambiguous edge cases
+The problem compounds at scale. When a system has 20+ authoritative documents with overlapping scope, agents can't determine which is the source of truth, which overrides which, or whether a doc they found is still valid. The result is either over-retrieval (load everything, waste tokens) or under-retrieval (miss the right doc, act on stale information).
 
-**Example Traditional Doc:**
-```markdown
-## Budget Approval
-The manager should approve expenses under $1,000. 
-Larger expenses need executive approval.
+The standard answer — "just keep docs updated" — misses the structural issue. A doc can be perfectly current and still fail an agent because it uses ambiguous section headers, implicit cross-references, or prose that chunks poorly in semantic search. Agentic readability is a distinct design requirement, not a side effect of being well-written for humans.
+
+---
+
+## Architecture
+
+The system has three layers: standards, registry, and validation.
+
+```
+┌──────────────────────────────────────────────────────────┐
+│                  AGENTIC DOC STANDARDS                   │
+│                                                          │
+│  Semantic headers (headers = concepts, not topics)       │
+│  YAML frontmatter (name, description, version, status)   │
+│  Unambiguous cross-references (file path, not name)      │
+│  Chunking optimization (≤500 tokens per logical unit)    │
+│  SSOT declaration (is this THE source, or a consumer?)   │
+└──────────────────────┬───────────────────────────────────┘
+                       │
+                       ▼
+┌──────────────────────────────────────────────────────────┐
+│                    SSOT REGISTRY                         │
+│               (SSOT-REGISTRY-MASTER.md)                  │
+│                                                          │
+│  20+ authoritative documents tracked                     │
+│  Cascade dependencies mapped (A → B → C)                │
+│  Override rules explicit (which doc wins on conflict)    │
+│  Status per doc: active / deprecated / draft             │
+└──────────────────────┬───────────────────────────────────┘
+                       │
+                       ▼
+┌──────────────────────────────────────────────────────────┐
+│                9-GATE QUALITY VALIDATION                 │
+│                                                          │
+│  Gate 1: YAML frontmatter present and complete           │
+│  Gate 2: SSOT status declared                            │
+│  Gate 3: Section headers are concept-named               │
+│  Gate 4: Cross-references use file paths                 │
+│  Gate 5: No ambiguous pronouns (it/this/that)            │
+│  Gate 6: Chunking boundaries at logical breaks           │
+│  Gate 7: Version and last-updated present                │
+│  Gate 8: Registry entry exists                           │
+│  Gate 9: Cascade dependencies documented                 │
+└──────────────────────────────────────────────────────────┘
 ```
 
-**Problems:**
-- What exactly is "larger"? $1,001? $1,000.01?
-- How does AI programmatically check this rule?
-- No validation that decisions follow policy
+**Naming convention:** `-MASTER.md` = authoritative source. Any doc without this suffix is a consumer or reference — it may cite the MASTER but cannot override it. Agents learn this pattern once and apply it universally.
 
 ---
 
-## ✅ The Solution
+## Key Insight
 
-**Hybrid Documentation:** Human-readable markdown + Machine-readable XML
+**Doc quality is measurable — and the score is consistent across doc sizes.**
 
-**Same Policy, Hybrid Format:**
-```markdown
-## Budget Approval
+The 9-gate system was validated across 4 documents of very different sizes and complexity. All 4 scored exactly 88/100 after optimization. A small test document and a 14x-larger production document reached the same score because the gates test *structural properties*, not content volume.
 
-The manager approves routine expenses while executives handle major investments.
+This matters because it means doc quality is auditable without reading the content. An agent (or a human auditor) can score any document in under 2 minutes by checking gate presence — no judgment calls required. 45→88 isn't a fuzzy improvement; it's specific gates that changed.
 
-<!-- MACHINE-READABLE DECISION RULES -->
-<decision_matrix>
-  <autonomy_level level="1">
-    <threshold type="spending" max="0" currency="USD"/>
-    <action>execute_immediately</action>
-  </autonomy_level>
-  <autonomy_level level="2">
-    <threshold type="spending" min="1" max="1000" currency="USD"/>
-    <action>propose_and_wait</action>
-    <requires_approval>true</requires_approval>
-  </autonomy_level>
-  <autonomy_level level="3">
-    <threshold type="spending" min="1001" currency="USD"/>
-    <action>flag_for_discussion</action>
-    <escalation_required>true</escalation_required>
-  </autonomy_level>
-</decision_matrix>
-```
-
-**Benefits:**
-- ✅ Humans read the markdown (clear, natural language)
-- ✅ AI queries the XML (precise, programmatic)
-- ✅ Zero ambiguity on edge cases ($1,000 vs $1,001)
-- ✅ Validation scripts ensure compliance
-- ✅ Progressive autonomy levels codified
+The second insight: **cascade dependencies are the missing layer in most doc systems.** If Document A references Document B, and B is updated, A may now be wrong — but nothing flags it. The SSOT Registry tracks these dependencies explicitly so a change to one document surfaces all downstream documents that need review. This is the difference between a doc system that stays current and one that slowly drifts into inconsistency.
 
 ---
 
-## 🏗️ Architecture
+## Results
 
-### Three-Layer System
-
-**Layer 1: Human-Readable Markdown**
-- Strategic context and rationale
-- Examples and edge cases
-- Update schedules and protocols
-- Cross-references to related documents
-
-**Layer 2: Machine-Readable XML**
-- Decision thresholds and triggers
-- Autonomy level specifications
-- Risk scoring matrices
-- Validation rules
-
-**Layer 3: Validation & Enforcement**
-- Scripts validate XML against schemas
-- AI queries XML for decision rules
-- Compliance checking automated
-- Audit trails for all decisions
+- **Doc quality scores: 45→88/100** across all optimized documents
+- **36/36 gate passes** — 9 gates × 4 documents, zero rework required
+- **20+ documents** tracked in SSOT Registry with cascade dependencies
+- **Consistent scoring across document sizes** — small test doc and 14x-larger production doc scored identically, validating the structural approach
+- **`doc-management-skill v2.0`** packages this as a reusable capability with agentic execution standards
+- **Applied across 350+ sessions** — every document in the MRMINOR knowledge base conforms to these standards
 
 ---
 
-## 📊 Framework Components
+## Built With
 
-### Autonomy Sections (Markdown)
-
-**For Strategic Documents:**
-- 🎯 Decision Authority (Level 1/2/3 breakdown)
-- ⚠️ Risk Assessment (Low/Medium/High scenarios)
-- 📊 Success Metrics (Measurable KPIs)
-- 🚨 Escalation Protocol (When to involve humans)
-- 🔄 Update Protocol (Triggers and versioning)
-
-**For Technical Documents:**
-- 🔗 Dependencies (Prerequisites, blockers)
-- 🚨 Failure Protocols (Error handling)
-- 🤖 Automation Integration (System connections)
-- 🔄 Update Protocol (Infrastructure changes)
-
-**For All Documents:**
-- 🚨 Escalation Protocol (Always required)
-- 🔄 Update Protocol (Always required)
-
-### XML Data Sections (Machine-Readable)
-
-**Decision Matrices:**
-```xml
-<decision_matrix>
-  <autonomy_level level="1">
-    <threshold type="spending" max="0"/>
-    <threshold type="time" max="30" unit="minutes"/>
-    <action>execute_immediately</action>
-  </autonomy_level>
-</decision_matrix>
-```
-
-**Risk Scoring:**
-```xml
-<risk_assessment>
-  <scenario type="budget_overrun">
-    <probability>0.15</probability>
-    <impact severity="medium" cost="5000"/>
-    <risk_score>7.5</risk_score>
-  </scenario>
-</risk_assessment>
-```
-
-**Escalation Rules:**
-```xml
-<escalation_protocol>
-  <trigger condition="spending_exceeds" value="1000"/>
-  <trigger condition="error_rate_above" value="0.05"/>
-  <action>notify_immediately</action>
-  <recipient role="CEO"/>
-</escalation_protocol>
-```
+- **`doc-management-skill v2.0`** — skill module packaging the full workflow (create → validate → register → index)
+- **Supabase pgvector** — semantic index that benefits directly from chunking optimization
+- **SSOT Registry** — living document tracking 20+ authoritative sources with dependency graph
+- **MRMINOR HAIOS/AOS** — production environment where these standards were developed and validated
+- **350+ sessions** of agentic operations providing the signal for what breaks and what works
 
 ---
 
-## 🚀 Progressive Implementation
+## Related Work
 
-### Phase 1: Start Simple (Week 1-2)
-Add markdown autonomy sections only:
-- Decision authority breakdowns
-- Escalation protocols
-- Update triggers
+This framework is part of a larger [Human-AI Operating System (HAIOS)](https://mrminor-dev.github.io) — a production infrastructure for human-AI collaboration built across 350+ sessions.
 
-**Time:** 5-10 minutes per document  
-**Benefit:** Immediate clarity for AI operations
-
-### Phase 2: Add Basic XML (Week 3-4)
-Add simple XML thresholds:
-- Spending limits
-- Time constraints
-- Basic triggers
-
-**Time:** 10-15 minutes per document  
-**Benefit:** Programmatic validation begins
-
-### Phase 3: Advanced XML (Month 2-3)
-Add complex decision logic:
-- Multi-factor risk scoring
-- Conditional autonomy rules
-- Integration specifications
-
-**Time:** 15-20 minutes per document  
-**Benefit:** True autonomous decision-making
-
-### Phase 4: Full Automation (Month 3+)
-- Validation scripts running on commits
-- AI querying XML for all decisions
-- Automatic compliance checking
-- Zero human decisions for Level 1 actions
+Other components:
+- [ai-skills-framework](https://github.com/MrMinor-dev/ai-skills-framework) — the capability module system that uses these doc standards
+- [semantic-search-framework](https://github.com/MrMinor-dev/semantic-search-framework) — the retrieval layer that benefits from chunking optimization
+- [quality-assurance-framework](https://github.com/MrMinor-dev/quality-assurance-framework) — 60-point audit system built using the same validation-gate approach
 
 ---
 
-## 📈 Production Results
+## Author
 
-**After 3 Months:**
+**Jordan Waxman** — AI Systems & Operations  
+14 years operations leadership + 350 sessions building human-AI infrastructure  
 
-**Document Coverage:**
-- Started: 0% (62 traditional docs)
-- Current: 91% (70/77 docs hybrid format)
-- Target: 100% by end of Month 4
-
-**Decision Autonomy:**
-- Level 1 (Execute immediately): 87% of decisions
-- Level 2 (Propose and wait): 11% of decisions
-- Level 3 (Flag for discussion): 2% of decisions
-
-**Time Savings:**
-- Before: 3-5 minutes per decision (human review)
-- After: 30 seconds per decision (AI autonomous)
-- Savings: 80-90% time reduction on routine decisions
-
-**Quality Metrics:**
-- Policy compliance: 100% (validated via XML)
-- Decision errors: <1% (down from ~15% with natural language)
-- Audit trail: Complete (all decisions logged)
+[Portfolio](https://mrminor-dev.github.io) · [GitHub](https://github.com/MrMinor-dev) · [Email](mailto:waxmanj@mac.com)
 
 ---
 
-## 🔧 Implementation
-
-See [IMPLEMENTATION.md](IMPLEMENTATION.md) for:
-- Step-by-step conversion guide
-- Document type templates
-- XML schema specifications
-- Validation scripts
-
-See [EXAMPLES.md](EXAMPLES.md) for:
-- Before/after document comparisons
-- Real-world examples from production
-- Common patterns and anti-patterns
-
-See [SCHEMA.md](SCHEMA.md) for:
-- Complete XML schema documentation
-- Validation rules
-- Extension points for custom logic
-
----
-
-## 🎓 Key Learnings
-
-### What Works
-
-**1. Progressive Adoption**
-- Start with markdown sections (quick wins)
-- Add XML incrementally (no big-bang)
-- 5-10 docs per week sustainable pace
-
-**2. Dual Format Critical**
-- Markdown for humans (context, examples)
-- XML for machines (rules, thresholds)
-- Both required for effective autonomy
-
-**3. Validation Essential**
-- Scripts catch XML errors immediately
-- Prevents invalid decision rules in production
-- Builds confidence in autonomous operations
-
-### What Doesn't Work
-
-**1. XML-Only Documentation**
-- Too verbose for human readers
-- Loses strategic context
-- Hard to maintain
-
-**2. Natural Language Only**
-- Ambiguous edge cases
-- AI misinterpretation risk
-- No programmatic validation
-
-**3. Big-Bang Conversion**
-- Overwhelming workload
-- Quality suffers
-- Adoption stalls
-
----
-
-## 🔗 Integration
-
-This framework integrates with:
-
-**AI Session Orchestration:**
-- AI queries XML for decision authority
-- Session context includes autonomy levels
-- Validation on every session startup
-
-**File Management System:**
-- Auto-index tracks document coverage
-- Cross-references validate bidirectionally
-- Naming conventions enforce structure
-
-**Quality Assurance Framework:**
-- Pre-flight checks validate XML schemas
-- Compliance verification automated
-- Audit trails for all autonomous decisions
-
----
-
-## 📚 Use Cases
-
-**Business Operations:**
-- Expense approval workflows
-- Partnership evaluation criteria
-- Content publication rules
-- Customer service escalation
-
-**Software Development:**
-- Code review requirements
-- Deployment authorization
-- Feature flag configurations
-- Error handling protocols
-
-**Compliance & Legal:**
-- Regulatory requirement tracking
-- Risk assessment automation
-- Audit trail generation
-- Policy enforcement
-
----
-
-## 🛠️ Technical Stack
-
-**Documentation:**
-- Markdown for human-readable content
-- XML for machine-readable rules
-- YAML for configuration (optional)
-
-**Validation:**
-- XML Schema (XSD) for structure validation
-- Custom scripts for business rule validation
-- Git pre-commit hooks for enforcement
-
-**Integration:**
-- File system APIs for document access
-- XML parsers for rule extraction
-- Logging systems for audit trails
-
----
-
-## 📊 Metrics Dashboard
-
-**Coverage Metrics:**
-- Total documents: 77
-- Documents with autonomy sections: 70 (91%)
-- Documents with XML: 67 (87%)
-- Fully compliant: 67 (87%)
-
-**Decision Metrics:**
-- Total decisions tracked: 2,847
-- Level 1 autonomous: 2,476 (87%)
-- Level 2 proposals: 313 (11%)
-- Level 3 escalations: 58 (2%)
-
-**Quality Metrics:**
-- Policy compliance rate: 100%
-- XML validation errors: 0
-- Decision accuracy: 99.2%
-- Audit trail completeness: 100%
-
-**Time Metrics:**
-- Avg. decision time (before): 3.5 minutes
-- Avg. decision time (after): 0.5 minutes
-- Time saved per decision: 3 minutes (86% reduction)
-- Monthly time savings: 140+ hours
-
----
-
-## 🚀 Getting Started
-
-**1. Read the Documentation:**
-- [IMPLEMENTATION.md](IMPLEMENTATION.md) - Step-by-step guide
-- [EXAMPLES.md](EXAMPLES.md) - Real-world samples
-- [SCHEMA.md](SCHEMA.md) - XML specifications
-
-**2. Start Small:**
-- Pick 3-5 high-impact documents
-- Add markdown autonomy sections first
-- Test with your AI assistant
-- Iterate based on feedback
-
-**3. Add XML Gradually:**
-- Start with simple thresholds
-- Validate with schemas
-- Test decision logic
-- Expand to complex rules
-
-**4. Measure Results:**
-- Track decision time savings
-- Monitor compliance rates
-- Collect AI feedback
-- Iterate framework based on data
-
----
-
-## 📖 Documentation
-
-- **[IMPLEMENTATION.md](IMPLEMENTATION.md)** - Complete implementation guide
-- **[EXAMPLES.md](EXAMPLES.md)** - Before/after document examples
-- **[SCHEMA.md](SCHEMA.md)** - XML schema documentation
-- **[sample-documents/](sample-documents/)** - Real production examples
-
----
-
-## 📄 License
-
-MIT License - See [LICENSE](LICENSE) for details
-
----
-
-## 📧 Contact
-
-**GitHub:** [@MrMinor-dev](https://github.com/MrMinor-dev)  
-**Email:** waxmanj@mac.com  
-**Location:** Seattle, WA
-
----
-
-**Built for production operations. Battle-tested over 3 months. Proven 86% time reduction.**
-
-*This is a real production system, not an academic exercise. It manages actual business operations where autonomous decision-making and clear accountability are critical.*
+*Part of the MRMINOR HAIOS/AOS production infrastructure. Every number verified from production systems.*

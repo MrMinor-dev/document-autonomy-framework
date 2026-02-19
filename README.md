@@ -79,7 +79,7 @@ The second insight: **cascade dependencies are the missing layer in most doc sys
 - **20+ documents** tracked in SSOT Registry with cascade dependencies
 - **Consistent scoring across document sizes** — small test doc and 14x-larger production doc scored identically, validating the structural approach
 - **`doc-management-skill v2.0`** packages this as a reusable capability with agentic execution standards
-- **Applied across 350+ sessions** — every document in the MRMINOR knowledge base conforms to these standards
+- **Applied since October 2024** — every document in the MRMINOR knowledge base conforms to these standards
 
 ---
 
@@ -89,13 +89,13 @@ The second insight: **cascade dependencies are the missing layer in most doc sys
 - **Supabase pgvector** — semantic index that benefits directly from chunking optimization
 - **SSOT Registry** — living document tracking 20+ authoritative sources with dependency graph
 - **MRMINOR HAIOS/AOS** — production environment where these standards were developed and validated
-- **350+ sessions** of agentic operations providing the signal for what breaks and what works
+- **Agentic operations since October 2024** providing the signal for what breaks and what works
 
 ---
 
 ## Related Work
 
-This framework is part of a larger [Human-AI Operating System (HAIOS)](https://mrminor-dev.github.io) — a production infrastructure for human-AI collaboration built across 350+ sessions.
+This framework is part of a larger [Human-AI Operating System (HAIOS)](https://mrminor-dev.github.io) — a production infrastructure for human-AI collaboration, in production since October 2024.
 
 Other components:
 - [ai-skills-framework](https://github.com/MrMinor-dev/ai-skills-framework) — the capability module system that uses these doc standards
@@ -107,7 +107,7 @@ Other components:
 ## Author
 
 **Jordan Waxman** — AI Systems & Operations  
-14 years operations leadership + 350 sessions building human-AI infrastructure  
+14 years operations leadership — building human-AI infrastructure since 2025  
 
 [Portfolio](https://mrminor-dev.github.io) · [GitHub](https://github.com/MrMinor-dev) · [Email](mailto:waxmanj@mac.com)
 
